@@ -1,0 +1,43 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+CTestTestfile.cmake
+
+# Coverage artifacts
+*.gcda
+*.gcno
+*.gcov
+coverage.info
+coverage_filtered.info
+coverage_html/
+
+# Compiled binaries & libraries
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
