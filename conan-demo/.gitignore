@@ -1,0 +1,10 @@
+# Build artefacts (generated, not versioned)
+mymath-prebuilt/lib/
+mymath-prebuilt/*.o
+myapp/build/
+myapp/CMakeUserPresets.json
+
+# Conan-generated env scripts (in package source folder)
+mymath-prebuilt/conanbuild*.sh
+mymath-prebuilt/conanrun*.sh
+mymath-prebuilt/deactivate_*.sh
