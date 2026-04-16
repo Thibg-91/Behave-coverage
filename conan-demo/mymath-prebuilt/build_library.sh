@@ -8,6 +8,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+mkdir -p "${SCRIPT_DIR}/lib"
+
 echo "[mymath] Compiling source..."
 g++ -std=c++17 -O2 \
     -I"${SCRIPT_DIR}/include" \

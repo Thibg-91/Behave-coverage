@@ -1,5 +1,6 @@
 # Build artefacts (generated, not versioned)
-mymath-prebuilt/lib/
+mymath-prebuilt/lib/*.a
+mymath-prebuilt/lib/*.lib
 mymath-prebuilt/*.o
 myapp/build/
 myapp/CMakeUserPresets.json
