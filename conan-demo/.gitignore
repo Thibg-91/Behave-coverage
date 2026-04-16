@@ -2,6 +2,7 @@
 mymath-prebuilt/lib/*.a
 mymath-prebuilt/lib/*.lib
 mymath-prebuilt/*.o
+mymath-prebuilt/*.obj
 myapp/build/
 myapp/CMakeUserPresets.json
 
