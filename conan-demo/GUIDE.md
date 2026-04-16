@@ -23,6 +23,22 @@ conan-demo/
 └── GUIDE.md
 ```
 
+### Cycle de vie des deux packages
+
+```
+mymath-prebuilt/                         myapp/
+──────────────────────────────           ────────────────────────────────────
+1. build_library.sh/.bat                 3. conan create .
+   → lib/libmymath.a (ou .lib)              → build() : cmake + compile
+                                            → package() : copie bin/myapp
+2. conan export-pkg .                       → cache Conan
+   → cache Conan (pas de build())
+                                         4. conan install --requires myapp/1.0
+                                               -g VirtualRunEnv
+                                            source conanrun.sh
+                                            myapp          ← depuis le cache !
+```
+
 ---
 
 ## Prérequis
@@ -42,27 +58,18 @@ conan profile detect   # crée ~/.conan2/profiles/default si absent
 
 ---
 
-## Linux / macOS — GCC ou Clang
+## Linux / macOS
 
-### Étape 1 — Compiler la bibliothèque manuellement
+### Étape 1 — Compiler `mymath` manuellement
 
 ```bash
 cd mymath-prebuilt/
 chmod +x build_library.sh
 ./build_library.sh
+# → lib/libmymath.a
 ```
 
-Ce script fait simplement :
-
-```bash
-mkdir -p lib
-g++ -std=c++17 -O2 -I include/ -c src/mymath.cpp -o mymath.o
-ar rcs lib/libmymath.a mymath.o
-```
-
-Vous devriez obtenir `lib/libmymath.a`.
-
-### Étape 2 — Empaqueter dans le cache Conan
+### Étape 2 — Empaqueter `mymath` dans le cache Conan
 
 ```bash
 conan export-pkg . \
@@ -72,26 +79,47 @@ conan export-pkg . \
     -s arch=x86_64
 ```
 
-> Sur macOS remplacez `-s os=Linux` par `-s os=Macos`.
+> Sur macOS : `-s os=Macos`
 
-### Étape 3 — Construire et lancer `myapp`
+```bash
+conan list "mymath/1.0:*"   # vérification
+```
+
+### Étape 3 — Créer le package `myapp`
+
+`conan create` compile les sources, appelle `package()` pour copier
+l'exécutable dans `bin/`, puis place le tout dans le cache Conan.
 
 ```bash
 cd ../myapp/
-
-conan install . --output-folder=build --build=missing -s build_type=Release
-
-cmake -S . -B build/build/Release \
-    -DCMAKE_TOOLCHAIN_FILE=build/build/Release/generators/conan_toolchain.cmake \
-    -DCMAKE_BUILD_TYPE=Release
-
-cmake --build build/build/Release
-
-./build/build/Release/myapp
+conan create . -s build_type=Release
 ```
 
 Sortie attendue :
+```
+myapp/1.0: Calling package()
+myapp/1.0: package(): Packaged 1 file: myapp
+myapp/1.0: Package '...' created
+```
 
+### Étape 4 — Consommer et exécuter depuis le package
+
+Depuis n'importe quel dossier (ici `/tmp/run_myapp/`), on demande à Conan
+de générer un environnement d'exécution `VirtualRunEnv` qui ajoute le `bin/`
+du package à `PATH` :
+
+```bash
+mkdir /tmp/run_myapp && cd /tmp/run_myapp
+
+conan install --requires myapp/1.0 \
+    -s build_type=Release \
+    -g VirtualRunEnv
+
+source conanrun.sh   # injecte le bin/ du cache dans PATH
+myapp                # appelle l'exécutable depuis le package Conan
+```
+
+Sortie :
 ```
 7 + 5 = 12
 ```
@@ -102,60 +130,42 @@ Sortie attendue :
 
 ### Prérequis Windows
 
-- Visual Studio 2019 (Community, Professional ou Enterprise)
-- Composant **"Développement Desktop en C++"** installé
-- `vswhere.exe` présent (installé automatiquement avec Visual Studio)
+- Visual Studio 2019 avec **"Développement Desktop en C++"**
+- `vswhere.exe` présent (installé avec Visual Studio)
 
 ### Étape 1 — Créer un profil Conan pour MSVC 2019
 
-Depuis un terminal (PowerShell ou cmd) :
-
 ```bat
 conan profile detect
-```
-
-Conan détecte automatiquement MSVC sur Windows. Vérifiez le profil généré :
-
-```bat
 conan profile show
 ```
 
-Il doit ressembler à :
-
+Profil attendu :
 ```ini
 [settings]
 os=Windows
 arch=x86_64
 compiler=msvc
-compiler.version=193
+compiler.version=192
 compiler.runtime=dynamic
 compiler.cppstd=14
 build_type=Release
 ```
 
-> **`compiler.version`** : `192` = VS 2019 (MSVC 14.2x), `193` = VS 2022.  
-> Conan 2 détecte la version installée — vérifiez que c'est bien `192` si vous
-> avez uniquement VS 2019.
+> `compiler.version=192` = MSVC 14.2x (VS 2019).
 
-### Étape 2 — Compiler la bibliothèque avec MSVC 2019
-
-Depuis PowerShell ou cmd **ordinaire** (le script `build_library.bat` configure
-l'environnement MSVC lui-même via `vcvarsall.bat`) :
+### Étape 2 — Compiler `mymath` avec MSVC 2019
 
 ```bat
 cd mymath-prebuilt\
 build_library.bat
+:: → lib\mymath.lib
 ```
 
-Le script :
-1. Localise Visual Studio 2019 avec `vswhere.exe`
-2. Appelle `vcvarsall.bat x64` pour préparer l'environnement
-3. Compile avec `cl.exe /std:c++17 /O2`
-4. Archive avec `lib.exe`
+Le script localise VS 2019 via `vswhere.exe`, appelle `vcvarsall.bat x64`,
+compile avec `cl.exe /std:c++17`, archive avec `lib.exe`.
 
-Résultat : `lib\mymath.lib`
-
-### Étape 3 — Empaqueter dans le cache Conan
+### Étape 3 — Empaqueter `mymath` dans le cache Conan
 
 ```bat
 conan export-pkg . ^
@@ -163,49 +173,33 @@ conan export-pkg . ^
     --version 1.0 ^
     -s os=Windows ^
     -s arch=x86_64
-```
 
-Vérification :
-
-```bat
 conan list "mymath/1.0:*"
 ```
 
-### Étape 4 — Construire `myapp` avec CMake + MSVC
+### Étape 4 — Créer le package `myapp`
 
 ```bat
 cd ..\myapp\
-
-:: Installer les dépendances et générer les fichiers CMake
-conan install . ^
-    --output-folder=build ^
-    --build=missing ^
-    -s build_type=Release
-
-:: Configurer CMake (générateur multi-config Visual Studio 16)
-cmake -S . -B build\build\Release ^
-    -G "Visual Studio 16 2019" -A x64 ^
-    -DCMAKE_TOOLCHAIN_FILE=build\build\Release\generators\conan_toolchain.cmake
-
-:: Compiler en Release
-cmake --build build\build\Release --config Release
+conan create . -s build_type=Release
 ```
 
-### Étape 5 — Lancer l'exécutable
+CMake utilise automatiquement le générateur **Visual Studio 16 2019** détecté
+dans le profil Conan. L'exécutable `myapp.exe` est packagé dans `bin/`.
+
+### Étape 5 — Consommer et exécuter depuis le package
 
 ```bat
-build\build\Release\Release\myapp.exe
-```
+mkdir C:\tmp\run_myapp
+cd C:\tmp\run_myapp
 
-Sortie :
+conan install --requires myapp/1.0 ^
+    -s build_type=Release ^
+    -g VirtualRunEnv
 
+call conanrun.bat   :: injecte le bin\ du cache dans PATH
+myapp.exe           :: appelle l'exécutable depuis le package Conan
 ```
-7 + 5 = 12
-```
-
-> **Note sur le chemin** : avec le générateur Visual Studio (multi-config),
-> CMake place l'exécutable dans un sous-dossier `Release\` ou `Debug\`
-> à l'intérieur du répertoire de build.
 
 ---
 
@@ -214,80 +208,84 @@ Sortie :
 ### Linux
 
 ```bash
+# Package 1 — mymath
 cd mymath-prebuilt/
 ./build_library.sh
 conan export-pkg . --name mymath --version 1.0 -s os=Linux -s arch=x86_64
 
+# Package 2 — myapp (build + package dans le cache)
 cd ../myapp/
-conan install . --output-folder=build --build=missing -s build_type=Release
-cmake -S . -B build/build/Release \
-    -DCMAKE_TOOLCHAIN_FILE=build/build/Release/generators/conan_toolchain.cmake \
-    -DCMAKE_BUILD_TYPE=Release
-cmake --build build/build/Release
-./build/build/Release/myapp
+conan create . -s build_type=Release
+
+# Consommation depuis le cache (n'importe où)
+mkdir /tmp/run && cd /tmp/run
+conan install --requires myapp/1.0 -s build_type=Release -g VirtualRunEnv
+source conanrun.sh
+myapp
 ```
 
 ### Windows (MSVC 2019)
 
 ```bat
+:: Package 1 — mymath
 cd mymath-prebuilt\
 build_library.bat
 conan export-pkg . --name mymath --version 1.0 -s os=Windows -s arch=x86_64
 
+:: Package 2 — myapp
 cd ..\myapp\
-conan install . --output-folder=build --build=missing -s build_type=Release
-cmake -S . -B build\build\Release -G "Visual Studio 16 2019" -A x64 -DCMAKE_TOOLCHAIN_FILE=build\build\Release\generators\conan_toolchain.cmake
-cmake --build build\build\Release --config Release
-build\build\Release\Release\myapp.exe
+conan create . -s build_type=Release
+
+:: Consommation depuis le cache
+mkdir C:\tmp\run && cd C:\tmp\run
+conan install --requires myapp/1.0 -s build_type=Release -g VirtualRunEnv
+call conanrun.bat
+myapp.exe
 ```
 
 ---
 
 ## Points importants
 
-### Différence entre `conan create` et `conan export-pkg`
+### `conan export-pkg` vs `conan create`
 
-| Commande | Compile ? | Usage |
-|----------|-----------|-------|
-| `conan create` | Oui (appelle `build()`) | Bibliothèque dont on gère les sources dans Conan |
-| `conan export-pkg` | Non | Binaires pré-compilés extérieurs à Conan |
+| Commande | `build()` appelé ? | Usage |
+|----------|--------------------|-------|
+| `conan export-pkg` | Non | Binaires pré-compilés hors Conan (`mymath`) |
+| `conan create` | Oui | Sources gérées par Conan (`myapp`) |
 
-### Pourquoi `package_info()` est indispensable
+### Pourquoi `package()` et `package_info()` sont indispensables dans `myapp`
 
-Sans `package_info()`, les consommateurs ne sauraient pas :
-- quel fichier `.a` / `.lib` linker (`cpp_info.libs`)
-- où chercher les headers (`cpp_info.includedirs`)
-- où chercher la bibliothèque (`cpp_info.libdirs`)
+Sans `package()` : l'exécutable reste dans le dossier de build temporaire de
+Conan et disparaît. Il ne peut pas être consommé.
 
-Les générateurs Conan (`CMakeDeps`, `CMakeToolchain`) s'appuient sur ces
-informations pour générer les fichiers `Find<Package>.cmake` utilisés par CMake.
+Sans `package_info()` (avec `bindirs`) : `VirtualRunEnv` ne sait pas où
+chercher l'exécutable et ne l'ajoute pas au `PATH`.
+
+### Pourquoi `exports_sources` est obligatoire dans `myapp`
+
+```python
+exports_sources = "CMakeLists.txt", "src/*"
+```
+
+Lors du `conan create`, Conan copie les sources dans son propre dossier de
+build (dans `~/.conan2/`). Sans cette déclaration, `CMakeLists.txt` n'est
+pas copié et CMake échoue.
+
+### `VirtualRunEnv` — comment ça fonctionne
+
+`VirtualRunEnv` génère `conanrun.sh` (Linux) / `conanrun.bat` (Windows).
+Ce script injecte dans `PATH` le dossier `bin/` de chaque package déclarant
+`cpp_info.bindirs`. Après `source conanrun.sh`, la commande `myapp` pointe
+directement vers l'exécutable dans le cache Conan — aucun chemin absolu requis.
 
 ### Gestion multi-configurations (Debug / Release)
 
-Pour une lib pré-compilée disponible en Debug et Release, compilez les deux
-variantes et appelez `export-pkg` deux fois avec des settings différents.
+Pour livrer Debug et Release de `mymath`, compilez les deux variantes et
+appelez `export-pkg` deux fois. Pour `myapp`, un seul `conan create` par
+`build_type` suffit :
 
-**Linux :**
 ```bash
-# Release
-g++ -std=c++17 -O2 -I include/ -c src/mymath.cpp -o mymath.o && ar rcs lib/libmymath.a mymath.o
-conan export-pkg . --name mymath --version 1.0 -s os=Linux -s arch=x86_64 -s build_type=Release
-
-# Debug
-g++ -std=c++17 -g -O0 -I include/ -c src/mymath.cpp -o mymath.o && ar rcs lib/libmymath.a mymath.o
-conan export-pkg . --name mymath --version 1.0 -s os=Linux -s arch=x86_64 -s build_type=Debug
+conan create myapp/ -s build_type=Release
+conan create myapp/ -s build_type=Debug
 ```
-
-**Windows :**
-```bat
-:: Release
-cl.exe /std:c++17 /O2 /EHsc /I include /c src\mymath.cpp /Fo mymath.obj && lib.exe /OUT:lib\mymath.lib mymath.obj
-conan export-pkg . --name mymath --version 1.0 -s os=Windows -s arch=x86_64 -s build_type=Release
-
-:: Debug
-cl.exe /std:c++17 /Od /Zi /EHsc /I include /c src\mymath.cpp /Fo mymath.obj && lib.exe /OUT:lib\mymath.lib mymath.obj
-conan export-pkg . --name mymath --version 1.0 -s os=Windows -s arch=x86_64 -s build_type=Debug
-```
-
-> Pour gérer Debug/Release, il faut ajouter `"build_type"` dans les `settings`
-> de `conanfile.py` afin que Conan crée un package distinct par configuration.
