@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Type d'un livre individuel -->
+  <xs:complexType name="BookType">
+    <xs:sequence>
+      <xs:element name="title"  type="xs:string"/>
+      <xs:element name="author" type="xs:string"/>
+      <xs:element name="year"   type="xs:gYear"/>
+      <xs:element name="isbn"   type="xs:string"/>
+      <xs:element name="price"  type="xs:decimal"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:complexType>
+
+  <!-- Type d'une collection de livres -->
+  <xs:complexType name="BooksType">
+    <xs:sequence>
+      <xs:element name="book" type="BookType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="books" type="BooksType"/>
+
+</xs:schema>

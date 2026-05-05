@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<books>
+  <book id="b001">
+    <title>Le Petit Prince</title>
+    <author>Antoine de Saint-Exupery</author>
+    <year>1943</year>
+    <isbn>978-2-07-040850-4</isbn>
+    <price>9.99</price>
+  </book>
+  <book id="b002">
+    <title>L'Etranger</title>
+    <author>Albert Camus</author>
+    <year>1942</year>
+    <isbn>978-2-07-036024-6</isbn>
+    <price>NOT_A_DECIMAL</price>
+  </book>
+  <book id="b003">
+    <title>Les Miserables</title>
+    <author>Victor Hugo</author>
+    <year>1862</year>
+    <isbn>978-2-07-040823-8</isbn>
+    <price>14.50</price>
+  </book>
+</books>
