@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <!-- Inclusion du schéma définissant BookType et BooksType -->
-  <xs:include schemaLocation="book.xsd"/>
+  <xs:include schemaLocation="books.xsd"/>
 
   <xs:element name="library">
     <xs:complexType>
