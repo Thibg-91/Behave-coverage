@@ -1,9 +1,0 @@
-[requires]
-mathutils/1.0.0
-
-[generators]
-CMakeDeps
-CMakeToolchain
-
-[layout]
-cmake_layout
