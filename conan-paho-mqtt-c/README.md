@@ -328,12 +328,13 @@ sources:
   "1.3.6":
     # url optionnelle : utilisee seulement si l'archive n'est pas posee a cote de la recette
     # url: "https://artifactory.mon-entreprise.local/artifactory/<github-remote>/eclipse-paho/paho.mqtt.c/archive/refs/tags/v1.3.6.tar.gz"
-    sha256: "<COLLE ICI LE SHA256 CALCULE AU §2>"
+    # sha256 optionnel : decommenter avec l'empreinte de VOTRE archive (sha256sum / Get-FileHash)
+    # sha256: "<sha256 de paho.mqtt.c-1.3.6.tar.gz>"
   "1.3.16":
-    sha256: "<SHA256 DE paho.mqtt.c-1.3.16.tar.gz>"
+    # sha256: "<sha256 de paho.mqtt.c-1.3.16.tar.gz>"
 ```
 
-- `sha256` est **optionnel**. Si tu le mets, il doit correspondre exactement à **ton** archive. Une archive régénérée autrement, par exemple avec `git archive`, n'a pas la même empreinte que celle de GitHub.
+- `sha256` est **optionnel** : décommente la ligne et colle l'empreinte calculée au §2. Si tu le mets, il doit correspondre exactement à **ton** archive. Une archive régénérée autrement, par exemple avec `git archive`, n'a pas la même empreinte que celle de GitHub.
 - `url` n'est utile que si l'archive n'est **pas** posée à côté de la recette. La recette la télécharge alors avec `get()`, et l'URL doit être accessible (Artifactory).
 - Pour supporter une nouvelle version, il suffit d'ajouter une entrée ici et l'archive correspondante.
 
