@@ -1,0 +1,7 @@
+# Archive des sources (a deposer localement, non versionnee)
+paho.mqtt.c-*.tar.gz
+# Dossiers du flux local (conan source / build)
+src/
+build/
+test_package/build/
+CMakeUserPresets.json
