@@ -1,0 +1,7 @@
+sources:
+  # Cle = version de la lib C++ (5.29.6) ; archive / tag GitHub = 29.6
+  "5.29.6":
+    # url optionnelle : utilisee seulement si l'archive n'est pas posee a cote de la recette
+    # url: "https://artifactory.mon-entreprise.local/artifactory/<github-remote>/protocolbuffers/protobuf/archive/refs/tags/v29.6.tar.gz"
+    # sha256 optionnel : decommenter avec l'empreinte de VOTRE archive (sha256sum / Get-FileHash)
+    # sha256: "<sha256 de protobuf-29.6.tar.gz>"

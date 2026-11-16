@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package demo;
+
+import "google/protobuf/timestamp.proto";
+
+message Person {
+  string name = 1;
+  int32 id = 2;
+  repeated string emails = 3;
+  google.protobuf.Timestamp created = 4;
+}

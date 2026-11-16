@@ -1,0 +1,6 @@
+sources:
+  "20240116.2":
+    # url optionnelle : utilisee seulement si l'archive n'est pas posee a cote de la recette
+    # url: "https://artifactory.mon-entreprise.local/artifactory/<github-remote>/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz"
+    # sha256 optionnel : decommenter avec l'empreinte de VOTRE archive (sha256sum / Get-FileHash)
+    # sha256: "<sha256 de abseil-cpp-20240116.2.tar.gz>"
