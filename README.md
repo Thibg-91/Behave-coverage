@@ -15,9 +15,11 @@ A minimal C++17 command-line calculator demonstrating:
 ├── CMakeLists.txt
 ├── src/
 │   ├── main.cpp          ← CLI entry-point
-│   └── calculator.cpp    ← arithmetic implementation
+│   ├── calculator.cpp    ← arithmetic implementation
+│   └── xml_interface.cpp ← recherche de balises <Interface> (libxml2)
 ├── include/
-│   └── calculator.h
+│   ├── calculator.h
+│   └── xml_interface.h
 ├── tests/
 │   ├── CMakeLists.txt    ← defines the run_behave target
 │   ├── behave.ini
@@ -36,6 +38,7 @@ A minimal C++17 command-line calculator demonstrating:
 |------|----------------|
 | GCC  | 7+ (C++17 support) |
 | CMake | 3.16 |
+| libxml2 (dev) | 2.9 — `apt install libxml2-dev` |
 | Python | 3.8 |
 | behave | 1.2.6 — `pip install behave` |
 | lcov  | 1.14 (optional, for HTML report) |

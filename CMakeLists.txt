@@ -39,13 +39,18 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 # ---------------------------------------------------------------------------
 # Shared library  (calculator_lib) — can be linked by Python via ctypes
 # ---------------------------------------------------------------------------
+find_package(LibXml2 REQUIRED)
+
 add_library(calculator_lib SHARED
     src/calculator.cpp
+    src/xml_interface.cpp
 )
 
 target_include_directories(calculator_lib PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
+
+target_link_libraries(calculator_lib PRIVATE LibXml2::LibXml2)
 
 set_target_properties(calculator_lib PROPERTIES
     OUTPUT_NAME "calculator"
